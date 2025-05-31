@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Segurança de Dados</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
+            position: relative;
+        }
+        
+        .code-font {
+            font-family: 'Fira Code', monospace;
+        }
+        
+        .matrix-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            opacity: 0.07;
+            pointer-events: none;
+        }
+        
+        .container {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .card {
+            backdrop-filter: blur(8px);
+            background-color: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(100, 116, 139, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(14, 165, 233, 0.2);
+        }
+        
+        .glow-btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .glow-btn:hover {
+            box-shadow: 0 0 15px rgba(14, 165, 233, 0.6);
+        }
+        
+        .glow-btn::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            width: calc(100% + 4px);
+            height: calc(100% + 4px);
+            background: linear-gradient(45deg, #0ea5e9, #3b82f6, #0ea5e9);
+            z-index: -1;
+            animation: rotate 3s linear infinite;
+        }
+        
+        @keyframes rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .code-block {
+            position: relative;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            background-color: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(100, 116, 139, 0.3);
+            overflow: hidden;
+        }
+        
+        .code-line {
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+        
+        .code-comment {
+            color: #64748b;
+        }
+        
+        .code-keyword {
+            color: #0ea5e9;
+        }
+        
+        .code-string {
+            color: #10b981;
+        }
+        
+        .code-function {
+            color: #f59e0b;
+        }
+        
+        .code-number {
+            color: #ec4899;
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-left: 28px;
+            padding-bottom: 32px;
+        }
+        
+        .timeline-item:before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #0ea5e9;
+            z-index: 1;
+        }
+        
+        .timeline-item:after {
+            content: "";
+            position: absolute;
+            left: 5px;
+            top: 12px;
+            bottom: 0;
+            width: 2px;
+            background-color: rgba(14, 165, 233, 0.3);
+        }
+        
+        .timeline-item:last-child:after {
+            display: none;
+        }
+        
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .accordion-content.active {
+            max-height: 500px;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+
+        .flex {
+            display: flex;
+            justify-content: center;
+        }
+        
+        #intro {
+            display: flex;
+            justify-content: center;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="matrix-bg" id="matrix"></div>
+    
+    <div class="container mx-auto px-4 py-12">
+        <!-- Header -->
+        <header class="mb-16 text-center">
+            <div class="inline-block mb-6 p-2 bg-sky-600/20 rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-sky-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+            </div>
+            <h1 class="text-5xl font-bold mb-4 bg-gradient-to-r from-sky-400 to-blue-500 text-transparent bg-clip-text">Segurança de Dados</h1>
+            <p class="text-xl text-slate-300 max-w-3xl mx-auto">Protegendo informações no mundo digital com soluções avançadas e práticas recomendadas</p>
+        </header>
+        
+        <!-- Navigation -->
+        <nav class="mb-16">
+            <div class="flex flex-wrap justify-center gap-2 md:gap-4">
+                <a href="#intro" class="px-4 py-2 bg-slate-800/80 hover:bg-sky-800/50 rounded-lg text-white transition-colors">Introdução</a>
+                <a href="#principles" class="px-4 py-2 bg-slate-800/80 hover:bg-sky-800/50 rounded-lg text-white transition-colors">Princípios</a>
+                <a href="#threats" class="px-4 py-2 bg-slate-800/80 hover:bg-sky-800/50 rounded-lg text-white transition-colors">Ameaças</a>
+                <a href="#practices" class="px-4 py-2 bg-slate-800/80 hover:bg-sky-800/50 rounded-lg text-white transition-colors">Práticas</a>
+                <a href="#tools" class="px-4 py-2 bg-slate-800/80 hover:bg-sky-800/50 rounded-lg text-white transition-colors">Ferramentas</a>
+                <a href="#compliance" class="px-4 py-2 bg-slate-800/80 hover:bg-sky-800/50 rounded-lg text-white transition-colors">Conformidade</a>
+                <a href="#resources" class="px-4 py-2 bg-slate-800/80 hover:bg-sky-800/50 rounded-lg text-white transition-colors">Recursos</a>
+            </div>
+        </nav>
+        
+        <!-- Intro Section -->
+        <section id="intro" class="mb-20">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="text-3xl font-bold mb-6 text-sky-400">Por que a segurança de dados é crucial?</h2>
+                    <p class="text-lg mb-4 text-slate-300">No mundo hiperconectado de hoje, a proteção de dados tornou-se uma prioridade absoluta para empresas e indivíduos.</p>
+                    <p class="text-lg mb-6 text-slate-300">Vazamentos de dados podem resultar em:</p>
+                    <ul class="space-y-3 text-slate-300">
+                        <li class="flex items-start">
+                            <svg class="h-6 w-6 text-red-500 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Perdas financeiras significativas</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="h-6 w-6 text-red-500 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Danos à reputação da marca</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="h-6 w-6 text-red-500 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Violações de privacidade dos clientes</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="h-6 w-6 text-red-500 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Penalidades legais e regulatórias</span>
+                        </li>
+                    </ul>
+                </div>
+                
+            </div>
+        </section>
+        
+        <!-- Key Principles Section -->
+        <section id="principles" class="mb-20">
+            <h2 class="text-3xl font-bold mb-10 text-center text-sky-400">Princípios Fundamentais de Segurança</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Card 1 -->
+                <div class="card rounded-xl p-6 h-full">
+                    <div class="bg-sky-600/20 rounded-full w-16 h-16 flex items-center justify-center mb-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-white">Criptografia</h3>
+                    <p class="text-slate-300">Transforme dados sensíveis em códigos ilegíveis para proteger contra acesso não autorizado. Utilize algoritmos AES-256 e RSA para máxima segurança.</p>
+                    <div class="mt-4 pt-4 border-t border-slate-700">
+                        <span class="inline-block bg-sky-900/50 text-sky-300 rounded-full px-3 py-1 text-sm font-semibold mr-2 mb-2">AES-256</span>
+                        <span class="inline-block bg-sky-900/50 text-sky-300 rounded-full px-3 py-1 text-sm font-semibold mr-2 mb-2">RSA</span>
+                        <span class="inline-block bg-sky-900/50 text-sky-300 rounded-full px-3 py-1 text-sm font-semibold mr-2 mb-2">End-to-End</span>
+                    </div>
+                </div>
+                
+                <!-- Card 2 -->
+                <div class="card rounded-xl p-6 h-full">
+                    <div class="bg-indigo-600/20 rounded-full w-16 h-16 flex items-center justify-center mb-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-white">Autenticação Multifator</h3>
+                    <p class="text-slate-300">Adicione camadas extras de segurança além de senhas. Combine algo que você sabe, tem e é para verificação de identidade robusta.</p>
+                    <div class="mt-4 pt-4 border-t border-slate-700">
+                        <span class="inline-block bg-indigo-900/50 text-indigo-300 rounded-full px-3 py-1 text-sm font-semibold mr-2 mb-2">2FA</span>
+                        <span class="inline-block bg-indigo-900/50 text-indigo-300 rounded-full px-3 py-1 text-sm font-semibold mr-2 mb-2">Biometria</span>
+                        <span class="inline-block bg-indigo-900/50 text-indigo-300 rounded-full px-3 py-1 text-sm font-semibold mr-2 mb-2">Tokens</span>
+                    </div>
+                </div>
+                
+                <!-- Card 3 -->
+                <div class="card rounded-xl p-6 h-full">
+                    <div class="bg-emerald-600/20 rounded-full w-16 h-16 flex items-center justify-center mb-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-white">Atualizações Contínuas</h3>
+                    <p class="text-slate-300">Mantenha sistemas e software atualizados para corrigir vulnerabilidades conhecidas. Estabeleça um processo regular de patches de segurança.</p>
+                    <div class="mt-4 pt-4 border-t border-slate-700">
+                        <span class="inline-block bg-emerald-900/50 text-emerald-300 rounded-full px-3 py-1 text-sm font-semibold mr-2 mb-2">Patches</span>
+                        <span class="inline-block bg-emerald-900/50 text-emerald-300 rounded-full px-3 py-1 text-sm font-semibold mr-2 mb-2">Automação</span>
+                        <span class="inline-block bg-emerald-900/50 text-emerald-300 rounded-full px-3 py-1 text-sm font-semibold mr-2 mb-2">Monitoramento</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Common Threats Section -->
+        <section id="threats" class="mb-20">
+            <h2 class="text-3xl font-bold mb-10 text-center text-sky-400">Ameaças Comuns à Segurança de Dados</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+                <div class="card rounded-xl p-6">
+                    <h3 class="text-xl font-bold mb-4 text-white flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        Malware e Ransomware
+                    </h3>
+                    <p class="text-slate-300 mb-4">Software malicioso projetado para danificar, interromper ou ganhar acesso não autorizado a sistemas de computador. O ransomware criptografa dados e exige pagamento para restauração.</p>
+                    <div class="bg-red-900/20 rounded-lg p-4">
+                        <h4 class="font-semibold text-white mb-2">Sinais de alerta:</h4>
+                        <ul class="list-disc list-inside text-slate-300 space-y-1">
+                            <li>Desempenho lento do sistema</li>
+                            <li>Arquivos inacessíveis ou com extensões estranhas</li>
+                            <li>Mensagens de resgate na tela</li>
+                            <li>Programas que iniciam automaticamente</li>
+                            <li>Atividade de rede incomum</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card rounded-xl p-6">
+                    <h3 class="text-xl font-bold mb-4 text-white flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                        </svg>
+                        Phishing e Engenharia Social
+                    </h3>
+                    <p class="text-slate-300 mb-4">Tentativas de obter informações sensíveis se passando por entidades confiáveis. Manipulam pessoas para revelar dados confidenciais ou realizar ações que comprometem a segurança.</p>
+                    <div class="bg-red-900/20 rounded-lg p-4">
+                        <h4 class="font-semibold text-white mb-2">Como identificar:</h4>
+                        <ul class="list-disc list-inside text-slate-300 space-y-1">
+                            <li>E-mails com erros gramaticais ou ortográficos</li>
+                            <li>Solicitações urgentes de informações pessoais</li>
+                            <li>URLs suspeitos ou diferentes do oficial</li>
+                            <li>Remetentes desconhecidos ou suspeitos</li>
+                            <li>Ofertas que parecem boas demais para ser verdade</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="card rounded-xl p-6">
+                    <h3 class="text-xl font-bold mb-4 text-white flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                        Ataques de Força Bruta
+                    </h3>
+                    <p class="text-slate-300 mb-4">Tentativas repetidas de adivinhar senhas ou chaves de criptografia usando todas as combinações possíveis até encontrar a correta.</p>
+                    <div class="bg-red-900/20 rounded-lg p-4">
+                        <h4 class="font-semibold text-white mb-2">Proteções:</h4>
+                        <ul class="list-disc list-inside text-slate-300 space-y-1">
+                            <li>Senhas complexas e longas</li>
+                            <li>Bloqueio após múltiplas tentativas falhas</li>
+                            <li>Autenticação de dois fatores</li>
+                            <li>Monitoramento de tentativas de login</li>
+                            <li>Políticas de expiração de senha</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card rounded-xl p-6">
+                    <h3 class="text-xl font-bold mb-4 text-white flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                        </svg>
+                        Vazamento de Dados Internos
+                    </h3>
+                    <p class="text-slate-300 mb-4">Exposição de dados confidenciais por funcionários, seja acidental ou intencional. Pode ocorrer por negligência, falta de treinamento ou ações maliciosas.</p>
+                    <div class="bg-red-900/20 rounded-lg p-4">
+                        <h4 class="font-semibold text-white mb-2">Mitigação:</h4>
+                        <ul class="list-disc list-inside text-slate-300 space-y-1">
+                            <li>Controle de acesso baseado em funções</li>
+                            <li>Monitoramento de atividades dos usuários</li>
+                            <li>Treinamento regular de conscientização</li>
+                            <li>Políticas claras de manuseio de dados</li>
+                            <li>Prevenção contra perda de dados (DLP)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Best Practices Section -->
+        <section id="practices" class="mb-20">
+            <div class="bg-gradient-to-r from-sky-900/50 to-indigo-900/50 rounded-2xl p-8 md:p-12">
+                <h2 class="text-3xl font-bold mb-8 text-white">Melhores Práticas de Segurança</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <div class="bg-sky-500/20 rounded-full p-1 mr-3 mt-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-sky-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-white">Política de Senhas Fortes</h3>
+                                    <p class="text-slate-300">Exija senhas complexas com pelo menos 12 caracteres, combinando letras, números e símbolos.</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-sky-500/20 rounded-full p-1 mr-3 mt-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-sky-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-white">Backup Regular</h3>
+                                    <p class="text-slate-300">Implemente a regra 3-2-1: três cópias, em dois tipos de mídia, com uma armazenada off-site.</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-sky-500/20 rounded-full p-1 mr-3 mt-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-sky-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-white">Controle de Acesso</h3>
+                                    <p class="text-slate-300">Aplique o princípio do menor privilégio, concedendo apenas os acessos necessários para cada função.</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-sky-500/20 rounded-full p-1 mr-3 mt-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-sky-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-white">Segmentação de Rede</h3>
+                                    <p class="text-slate-300">Divida sua rede em segmentos isolados para limitar o acesso e conter possíveis violações.</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <div class="bg-sky-500/20 rounded-full p-1 mr-3 mt-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-sky-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-white">Treinamento de Funcionários</h3>
+                                    <p class="text-slate-300">Eduque regularmente sua equipe sobre ameaças de phishing, engenharia social e práticas seguras.</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-sky-500/20 rounded-full p-1 mr-3 mt-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-sky-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-white">Monitoramento Contínuo</h3>
+                                    <p class="text-slate-300">Implemente sistemas de detecção de intrusão e monitore atividades suspeitas em tempo real.</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-sky-500/20 rounded-full p-1 mr-3 mt-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-sky-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-white">Plano de Resposta a Incidentes</h3>
+                                    <p class="text-slate-300">Desenvolva e teste regularmente um plano de resposta para lidar com violações de segurança.</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-sky-500/20 rounded-full p-1 mr-3 mt-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-sky-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-white">Criptografia de Dados</h3>
+                                    <p class="text-slate-300">Criptografe dados sensíveis em repouso e em trânsito para protegê-los mesmo em caso de acesso não autorizado.</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Security Tools Section -->
+        <section id="tools" class="mb-20">
+            <h2 class="text-3xl font-bold mb-10 text-center text-sky-400">Ferramentas Essenciais de Segurança</h2>
+            
+            <div class="mb-10">
+                <div class="bg-slate-800/80 rounded-lg overflow-hidden">
+                    <div class="flex border-b border-slate-700">
+                        <button class="tab-button py-3 px-6 focus:outline-none w-1/3 text-center border-b-2 border-sky-500 text-white font-medium" data-tab="prevention">Prevenção</button>
+                        
+                    </div>
+                    
+                    <div class="p-6">
+                        <!-- Prevention Tab -->
+                        <div id="prevention" class="tab-content active">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="card rounded-lg p-4">
+                                    <h3 class="text-lg font-semibold text-white mb-2">Firewalls</h3>
+                                    <p class="text-slate-300 mb-3">Monitora e filtra o tráfego de rede de acordo com regras de segurança predefinidas.</p>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-sky-400">Hardware e Software</span>
+                                        <span class="bg-sky-900/30 text-sky-300 text-xs px-2 py-1 rounded">Proteção de Perímetro</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="card rounded-lg p-4">
+                                    <h3 class="text-lg font-semibold text-white mb-2">Antivírus/Antimalware</h3>
+                                    <p class="text-slate-300 mb-3">Detecta, previne e remove software malicioso como vírus, worms, trojans e ransomware.</p>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-sky-400">Proteção em Tempo Real</span>
+                                        <span class="bg-sky-900/30 text-sky-300 text-xs px-2 py-1 rounded">Endpoint Security</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="card rounded-lg p-4">
+                                    <h3 class="text-lg font-semibold text-white mb-2">VPN (Rede Privada Virtual)</h3>
+                                    <p class="text-slate-300 mb-3">Cria uma conexão segura e criptografada através de redes públicas como a internet.</p>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-sky-400">Acesso Remoto Seguro</span>
+                                        <span class="bg-sky-900/30 text-sky-300 text-xs px-2 py-1 rounded">Criptografia de Tráfego</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="card rounded-lg p-4">
+                                    <h3 class="text-lg font-semibold text-white mb-2">Gerenciadores de Senhas</h3>
+                                    <p class="text-slate-300 mb-3">Armazena e gerencia credenciais de forma segura, permitindo o uso de senhas complexas e únicas.</p>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-sky-400">Criptografia AES-256</span>
+                                        <span class="bg-sky-900/30 text-sky-300 text-xs px-2 py-1 rounded">Autenticação Segura</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Detection Tab -->
+                        <div id="detection" class="tab-content">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="card rounded-lg p-4">
+                                    <h3 class="text-lg font-semibold text-white mb-2">IDS/IPS</h3>
+                                    <p class="text-slate-300 mb-3">Sistemas de Detecção e Prevenção de Intrusões que monitoram atividades maliciosas ou violações de políticas.</p>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-indigo-400">Monitoramento de Rede</span>
+                                        <span class="bg-indigo-900/30 text-indigo-300 text-xs px-2 py-1 rounded">Detecção de Anomalias</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="card rounded-lg p-4">
+                                    <h3 class="text-lg font-semibold text-white mb-2">SIEM</h3>
+                                    <p class="text-slate-300 mb-3">Gerenciamento de Eventos e Informações de Segurança que coleta e analisa dados de segurança em tempo real.</p>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-indigo-400">Análise de Logs</span>
+                                        <span class="bg-indigo-900/30 text-indigo-300 text-xs px-2 py-1 rounded">Correlação de Eventos</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="card rounded-lg p-4">
+                                    <h3 class="text-lg font-semibold text-white mb-2">Scanners de Vulnerabilidade</h3>
+                                    <p class="text-slate-300 mb-3">Identifica e reporta vulnerabilidades em sistemas, redes e aplicações que poderiam ser exploradas.</p>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-indigo-400">Avaliação de Riscos</span>
+                                        <span class="bg-indigo-900/30 text-indigo-300 text-xs px-2 py-1 rounded">Testes de Penetração</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="card rounded-lg p-4">
+                                    <h3 class="text-lg font-semibold text-white mb-2">EDR</h3>
+                                    <p class="text-slate-300 mb-3">Detecção e Resposta de Endpoint que monitora atividades em dispositivos finais para detectar ameaças avançadas.</p>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-indigo-400">Monitoramento Comportamental</span>
+                                        <span class="bg-indigo-900/30 text-indigo-300 text-xs px-2 py-1 rounded">Resposta Automatizada</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Response Tab -->
+                        <div id="response" class="tab-content">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="card rounded-lg p-4">
+                                    <h3 class="text-lg font-semibold text-white mb-2">Plataformas SOAR</h3>
+                                    <p class="text-slate-300 mb-3">Orquestração, Automação e Resposta de Segurança que automatiza fluxos de trabalho de resposta a incidentes.</p>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-emerald-400">Automação de Resposta</span>
+                                        <span class="bg-emerald-900/30 text-emerald-300 text-xs px-2 py-1 rounded">Playbooks</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="card rounded-lg p-4">
+                                    <h3 class="text-lg font-semibold text-white mb-2">Ferramentas Forenses</h3>
+                                    <p class="text-slate-300 mb-3">Coleta e analisa evidências digitais após um incidente de segurança para determinar o que aconteceu.</p>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-emerald-400">Análise de Memória</span>
+                                        <span class="bg-emerald-900/30 text-emerald-300 text-xs px-2 py-1 rounded">Recuperação de Dados</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="card rounded-lg p-4">
+                                    <h3 class="text-lg font-semibold text-white mb-2">Sistemas de Backup e Recuperação</h3>
+                                    <p class="text-slate-300 mb-3">Permite a restauração de dados e sistemas após um incidente de segurança ou perda de dados.</p>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-emerald-400">Recuperação de Desastres</span>
+                                        <span class="bg-emerald-900/30 text-emerald-300 text-xs px-2 py-1 rounded">Continuidade de Negócios</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="card rounded-lg p-4">
+                                    <h3 class="text-lg font-semibold text-white mb-2">Plataformas de Gestão de Incidentes</h3>
+                                    <p class="text-slate-300 mb-3">Coordena e documenta a resposta a incidentes de segurança, facilitando a comunicação entre equipes.</p>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-emerald-400">Fluxo de Trabalho</span>
+                                        <span class="bg-emerald-900/30 text-emerald-300 text-xs px-2 py-1 rounded">Documentação</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Compliance Section -->
+        <section id="compliance" class="mb-20">
+            <h2 class="text-3xl font-bold mb-10 text-center text-sky-400">Conformidade e Regulamentações</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1">
+                    <div class="sticky top-8">
+                        <div class="card rounded-xl p-6">
+                            <h3 class="text-xl font-bold mb-4 text-white">Por que a conformidade importa?</h3>
+                            <p class="text-slate-300 mb-4">A conformidade com regulamentações de segurança de dados não é apenas uma obrigação legal, mas também uma prática comercial essencial que:</p>
+                            <ul class="space-y-3">
+                                <li class="flex items-start">
+                                    <svg class="h-5 w-5 text-sky-400 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span class="text-slate-300">Protege dados sensíveis de clientes e funcionários</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="h-5 w-5 text-sky-400 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span class="text-slate-300">Evita multas e penalidades significativas</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="h-5 w-5 text-sky-400 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span class="text-slate-300">Fortalece a confiança dos clientes e parceiros</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="h-5 w-5 text-sky-400 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span class="text-slate-300">Melhora a postura geral de segurança</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="h-5 w-5 text-sky-400 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span class="text-slate-300">Proporciona vantagem competitiva no mercado</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="lg:col-span-2">
+                    <div class="space-y-6">
+                        <!-- LGPD -->
+                        <div class="card rounded-xl p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-xl font-bold text-white">LGPD (Brasil)</h3>
+                                <span class="bg-sky-900/30 text-sky-300 text-xs px-3 py-1 rounded-full">Lei Geral de Proteção de Dados</span>
+                            </div>
+                            <p class="text-slate-300 mb-4">Lei brasileira que regula o tratamento de dados pessoais, online e offline, por pessoa natural ou por pessoa jurídica de direito público ou privado.</p>
+                            <div class="bg-slate-800/80 rounded-lg p-4">
+                                <h4 class="font-semibold text-white mb-2">Principais requisitos:</h4>
+                                <ul class="list-disc list-inside text-slate-300 space-y-1">
+                                    <li>Consentimento explícito para coleta de dados</li>
+                                    <li>Direito dos titulares de acessar, corrigir e excluir seus dados</li>
+                                    <li>Notificação de violações de dados</li>
+                                    <li>Nomeação de um Encarregado de Proteção de Dados (DPO)</li>
+                                    <li>Implementação de medidas técnicas e organizacionais de segurança</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- GDPR -->
+                        <div class="card rounded-xl p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-xl font-bold text-white">GDPR (Europa)</h3>
+                                <span class="bg-indigo-900/30 text-indigo-300 text-xs px-3 py-1 rounded-full">Regulamento Geral de Proteção de Dados</span>
+                            </div>
+                            <p class="text-slate-300 mb-4">Regulamento da União Europeia que fortalece a proteção de dados para todos os indivíduos dentro da UE e do Espaço Econômico Europeu.</p>
+                            <div class="bg-slate-800/80 rounded-lg p-4">
+                                <h4 class="font-semibold text-white mb-2">Principais requisitos:</h4>
+                                <ul class="list-disc list-inside text-slate-300 space-y-1">
+                                    <li>Base legal para processamento de dados</li>
+                                    <li>Avaliação de impacto na proteção de dados</li>
+                                    <li>Notificação de violação em 72 horas</li>
+                                    <li>Direito ao esquecimento e portabilidade de dados</li>
+                                    <li>Multas de até 4% do faturamento global anual</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- PCI DSS -->
+                        <div class="card rounded-xl p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-xl font-bold text-white">PCI DSS</h3>
+                                <span class="bg-amber-900/30 text-amber-300 text-xs px-3 py-1 rounded-full">Padrão de Segurança de Dados da Indústria de Cartões de Pagamento</span>
+                            </div>
+                            <p class="text-slate-300 mb-4">Conjunto de requisitos de segurança projetados para garantir que todas as empresas que processam, armazenam ou transmitem informações de cartão de crédito mantenham um ambiente seguro.</p>
+                            <div class="bg-slate-800/80 rounded-lg p-4">
+                                <h4 class="font-semibold text-white mb-2">Principais requisitos:</h4>
+                                <ul class="list-disc list-inside text-slate-300 space-y-1">
+                                    <li>Construir e manter uma rede segura</li>
+                                    <li>Proteger dados do titular do cartão</li>
+                                    <li>Manter um programa de gerenciamento de vulnerabilidades</li>
+                                    <li>Implementar medidas fortes de controle de acesso</li>
+                                    <li>Testar e monitorar redes regularmente</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- ISO 27001 -->
+                        <div class="card rounded-xl p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-xl font-bold text-white">ISO 27001</h3>
+                                <span class="bg-emerald-900/30 text-emerald-300 text-xs px-3 py-1 rounded-full">Padrão Internacional de Segurança da Informação</span>
+                            </div>
+                            <p class="text-slate-300 mb-4">Especifica os requisitos para estabelecer, implementar, manter e melhorar continuamente um sistema de gestão de segurança da informação.</p>
+                            <div class="bg-slate-800/80 rounded-lg p-4">
+                                <h4 class="font-semibold text-white mb-2">Principais componentes:</h4>
+                                <ul class="list-disc list-inside text-slate-300 space-y-1">
+                                    <li>Avaliação e tratamento de riscos</li>
+                                    <li>Política de segurança da informação</li>
+                                    <li>Controles de segurança organizacional</li>
+                                    <li>Segurança de recursos humanos</li>
+                                    <li>Gestão de ativos e controle de acesso</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        
+        
+        <!-- Resources Section -->
+        <section id="resources" class="mb-20">
+            <h2 class="text-3xl font-bold mb-10 text-center text-sky-400">Recursos Adicionais</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Resource 1 -->
+                <div class="card rounded-xl p-6 h-full">
+                    <div class="flex items-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-sky-400 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                        <h3 class="text-xl font-bold text-white">Livros Recomendados</h3>
+                    </div>
+                    <ul class="space-y-3">
+                        <li class="p-3 bg-slate-800/60 rounded-lg">
+                            <h4 class="font-semibold text-white">Segurança de Dados para Iniciantes</h4>
+                            <p class="text-sm text-slate-300">Um guia abrangente sobre os fundamentos da segurança de dados para não especialistas.</p>
+                        </li>
+                        <li class="p-3 bg-slate-800/60 rounded-lg">
+                            <h4 class="font-semibold text-white">Criptografia Aplicada</h4>
+                            <p class="text-sm text-slate-300">Entenda os princípios e aplicações práticas da criptografia moderna.</p>
+                        </li>
+                        <li class="p-3 bg-slate-800/60 rounded-lg">
+                            <h4 class="font-semibold text-white">Arte da Invisibilidade</h4>
+                            <p class="text-sm text-slate-300">Por Kevin Mitnick - Estratégias para proteger sua privacidade e segurança online.</p>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Resource 2 -->
+                <div class="card rounded-xl p-6 h-full">
+                    <div class="flex items-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-400 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                        </svg>
+                        <h3 class="text-xl font-bold text-white">Cursos e Certificações</h3>
+                    </div>
+                    <ul class="space-y-3">
+                        <li class="p-3 bg-slate-800/60 rounded-lg">
+                            <h4 class="font-semibold text-white">CompTIA Security+</h4>
+                            <p class="text-sm text-slate-300">Certificação de nível básico que valida as habilidades fundamentais de segurança.</p>
+                        </li>
+                        <li class="p-3 bg-slate-800/60 rounded-lg">
+                            <h4 class="font-semibold text-white">Certified Information Systems Security Professional (CISSP)</h4>
+                            <p class="text-sm text-slate-300">Certificação avançada para profissionais de segurança da informação.</p>
+                        </li>
+                        <li class="p-3 bg-slate-800/60 rounded-lg">
+                            <h4 class="font-semibold text-white">Certified Ethical Hacker (CEH)</h4>
+                            <p class="text-sm text-slate-300">Aprenda técnicas de hacking ético para identificar vulnerabilidades em sistemas.</p>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Resource 3 -->
+                <div class="card rounded-xl p-6 h-full">
+                    <div class="flex items-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-emerald-400 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <h3 class="text-xl font-bold text-white">Comunidades e Fóruns</h3>
+                    </div>
+                    <ul class="space-y-3">
+                        <li class="p-3 bg-slate-800/60 rounded-lg">
+                            <h4 class="font-semibold text-white">OWASP (Open Web Application Security Project)</h4>
+                            <p class="text-sm text-slate-300">Comunidade que produz artigos, metodologias e ferramentas sobre segurança de aplicações web.</p>
+                        </li>
+                        <li class="p-3 bg-slate-800/60 rounded-lg">
+                            <h4 class="font-semibold text-white">Reddit r/netsec</h4>
+                            <p class="text-sm text-slate-300">Fórum com discussões atualizadas sobre segurança de rede e informação.</p>
+                        </li>
+                        <li class="p-3 bg-slate-800/60 rounded-lg">
+                            <h4 class="font-semibold text-white">Stack Exchange Information Security</h4>
+                            <p class="text-sm text-slate-300">Plataforma de perguntas e respostas para profissionais e entusiastas de segurança.</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+       <!-- CTA Section -->
+<section class="mb-20">
+    <div class="bg-gradient-to-r from-sky-600 to-indigo-600 rounded-2xl p-8 md:p-12 text-center">
+        <h2 class="text-3xl font-bold mb-4 text-white">Proteja seus dados hoje mesmo</h2>
+        <p class="text-xl text-white/90 mb-8 max-w-2xl mx-auto">Responda o Quiz e descubra possíveis riscos para a segurança dos seus dados</p>
+        <div class="flex flex-wrap justify-center gap-4">
+            <button id="editableButton" class="glow-btn bg-white text-sky-800 font-bold py-3 px-8 rounded-lg hover:bg-sky-50 transition-all">
+                <a href="https://play.kahoot.it/v2/?quizId=0336c774-7048-4c68-936f-71b068495318&hostId=de283557-cc9f-4f43-8522-638f57280789" target="_blank">Clique aqui</a>
+            </button>
+        </div>
+    </div>
+</section>
+
+<footer class="text-center text-slate-400 pt-8 border-t border-slate-800">
+    <p>© 2025 - Sebastião de Castro - 2NA </p>
+    <p class="mt-2 mb-8">Curso Desenvolvimento de Sistemas</p>
+</footer>
+
